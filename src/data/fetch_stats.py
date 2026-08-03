@@ -21,7 +21,6 @@ def fetch_player_stats(season: str = CURRENT_SEASON) -> pd.DataFrame:
     df = stats.get_data_frames()[0]
     return df
 
-
 if __name__ == "__main__":
     df = fetch_player_stats()
     print(f"Pulled {df.shape[0]} players, {df.shape[1]} columns")
