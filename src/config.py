@@ -14,6 +14,8 @@ CURRENT_SEASON = "2024-25"
 # Where raw pulled data gets saved
 RAW_DATA_DIR = "data/raw"
 
+MIN_MINUTES_PLAYED = 500  # threshold to qualify for value rankings, avoids small-sample noise
+
 # Database connection settings, pulled from .env
 DB_CONFIG = {
     "host": os.getenv("DB_HOST"),
