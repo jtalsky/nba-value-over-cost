@@ -13,3 +13,12 @@ CURRENT_SEASON = "2024-25"
 
 # Where raw pulled data gets saved
 RAW_DATA_DIR = "data/raw"
+
+# Database connection settings, pulled from .env
+DB_CONFIG = {
+    "host": os.getenv("DB_HOST"),
+    "port": os.getenv("DB_PORT"),
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASSWORD"),
+    "database": os.getenv("DB_NAME"),
+}
