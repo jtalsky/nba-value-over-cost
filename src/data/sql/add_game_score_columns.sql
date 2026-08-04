@@ -1,11 +1,5 @@
--- Schema for the NBA Value-Over-Cost project.
--- Run this once to set up all tables.
-
-CREATE TABLE players (
-    player_id INT AUTO_INCREMENT PRIMARY KEY,
-    full_name VARCHAR(100) NOT NULL,
-    name_normalized VARCHAR(100) NOT NULL UNIQUE
-);
+-- Migration: add columns needed for Game Score formula
+DROP TABLE IF EXISTS player_stats;
 
 CREATE TABLE player_stats (
     stat_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -26,14 +20,5 @@ CREATE TABLE player_stats (
     free_throws_made FLOAT,
     free_throws_attempted FLOAT,
     minutes FLOAT,
-    FOREIGN KEY (player_id) REFERENCES players(player_id)
-);
-
-CREATE TABLE player_salaries (
-    salary_id INT AUTO_INCREMENT PRIMARY KEY,
-    player_id INT NOT NULL,
-    season VARCHAR(10) NOT NULL,
-    team VARCHAR(100),
-    salary BIGINT,
     FOREIGN KEY (player_id) REFERENCES players(player_id)
 );

@@ -49,18 +49,22 @@ def load_stats(cursor, stats_df: pd.DataFrame, name_to_id: dict):
     for _, row in stats_df.iterrows():
         player_id = name_to_id.get(row["name_normalized"])
         if player_id is None:
-            continue  # shouldn't happen, but skip safely if it does
+            continue
 
         cursor.execute(
             """
             INSERT INTO player_stats
-                (player_id, season, games_played, points, assists, rebounds, steals, blocks, turnovers, minutes)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                (player_id, season, games_played, points, assists, rebounds,
+                 offensive_rebounds, defensive_rebounds, steals, blocks, turnovers,
+                 personal_fouls, field_goals_made, field_goals_attempted,
+                 free_throws_made, free_throws_attempted, minutes)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 player_id, CURRENT_SEASON,
                 row["GP"], row["PTS"], row["AST"], row["REB"],
-                row["STL"], row["BLK"], row["TOV"], row["MIN"]
+                row["OREB"], row["DREB"], row["STL"], row["BLK"], row["TOV"],
+                row["PF"], row["FGM"], row["FGA"], row["FTM"], row["FTA"], row["MIN"]
             )
         )
 
@@ -83,14 +87,12 @@ def load_salaries(cursor, salaries_df: pd.DataFrame, name_to_id: dict):
         )
 
 if __name__ == "__main__":
-    # Load and clean both CSVs
     stats_df = pd.read_csv(f"{RAW_DATA_DIR}/player_stats_2024-25.csv")
     salaries_df = pd.read_csv(f"{RAW_DATA_DIR}/salaries_2024-25.csv")
 
     stats_df["name_normalized"] = stats_df["PLAYER_NAME"].apply(normalize_name)
     salaries_df["name_normalized"] = salaries_df["name"].apply(normalize_name)
 
-    # Only keep players that exist in BOTH datasets — our 402 clean matches
     valid_names = set(stats_df["name_normalized"]) & set(salaries_df["name_normalized"])
     stats_df = stats_df[stats_df["name_normalized"].isin(valid_names)]
     salaries_df = salaries_df[salaries_df["name_normalized"].isin(valid_names)]
@@ -98,7 +100,12 @@ if __name__ == "__main__":
     conn = get_connection()
     cursor = conn.cursor()
 
-    # Build the set of unique (full_name, normalized_name) pairs to insert
+    # Clear existing data first so re-running this script is always safe
+    # (child tables before parent, to respect foreign key constraints)
+    cursor.execute("DELETE FROM player_stats")
+    cursor.execute("DELETE FROM player_salaries")
+    cursor.execute("DELETE FROM players")
+
     all_players = set(zip(stats_df["PLAYER_NAME"], stats_df["name_normalized"]))
     name_to_id = load_players(cursor, all_players)
 
